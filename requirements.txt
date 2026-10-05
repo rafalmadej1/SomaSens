@@ -1,0 +1,43 @@
+# FastAPI Framework & Web Server
+fastapi==0.129.0
+uvicorn[standard]==0.31.0
+starlette>=0.40.0
+
+# Database & ORM
+SQLAlchemy>=2.0.0
+python-multipart>=0.0.6
+
+# Authentication & Security
+python-jose[cryptography]==3.5.0
+passlib[bcrypt]==1.7.4
+bcrypt==3.2.0
+cryptography>=46.0.0
+slowapi>=0.1.9  # Rate limiting
+
+# Email Validation
+email-validator>=2.0.0
+pydantic-extra-types>=2.0.0
+
+# Data Validation
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+
+# AI/ML - Google Gemini Integration
+google-genai>=1.70.0
+google-api-core>=2.30.0
+google-auth>=2.49.0
+
+# Utilities
+python-dotenv>=1.0.0
+requests>=2.31.0
+tenacity>=9.0.0
+
+# Testing
+pytest>=9.0.0
+pytest-asyncio>=1.4.0
+httpx>=0.26.0
+
+# Development
+uvloop>=0.20.0  # Performance boost for uvicorn
+watchfiles>=0.22.0  # Auto-reload support
+
