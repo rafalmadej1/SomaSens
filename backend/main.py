@@ -1,6 +1,5 @@
 import datetime
-import os
-from fastapi import FastAPI, Depends, HTTPException, status, Request, Query
+from fastapi import APIRouter, FastAPI, Depends, HTTPException, status, Request, Query
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -13,10 +12,12 @@ from starlette.responses import JSONResponse
 import backend.models as models
 import backend.database as database
 import backend.auth as auth
+from backend.config import get_settings
 from pydantic import BaseModel, Field, EmailStr, field_validator
 import backend.ai_service as ai_service
 
 app = FastAPI(title="SomaSense API")
+api_router = APIRouter()
 
 # Initialize database tables and indexes
 database.create_schema()
@@ -35,7 +36,7 @@ app.add_exception_handler(RateLimitExceeded, lambda request, exc: JSONResponse(
 ))
 
 # CORS Configuration - Restrict to specific origin
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",")
+ALLOWED_ORIGINS = get_settings().cors_origins
 
 app.add_middleware(
     CORSMiddleware,
@@ -78,21 +79,6 @@ class Token(BaseModel):
     token_type: str
 
 
-class PantryItemCreate(BaseModel):
-    name: str = Field(..., max_length=50)
-    quantity: int = Field(gt=0)
-    unit: models.UnitEnum = models.UnitEnum.GRAMS
-    location: models.LocationEnum
-    expirationDate: str = Field(..., max_length=20)
-
-
-class ActivityCreate(BaseModel):
-    activity_type: str = Field(..., max_length=100)
-    calories_burned: int = Field(gt=0)
-    duration_minutes: int = Field(gt=0)
-    date: str = Field(..., max_length=20)
-
-
 class UserProfileUpdate(BaseModel):
     age: Optional[int] = None
     weight: Optional[float] = None
@@ -122,21 +108,10 @@ class ShoppingRequest(BaseModel):
     preferences: Optional[str] = None
 
 
-class ItemConsume(BaseModel):
-    name: str
-    quantity_used: int = Field(gt=0)
-
-
-class ConsumptionResponse(BaseModel):
-    updated_items: List[dict]
-    warnings: List[str]
-    missing_items: List[str]
-
-
 # --- Auth Endpoints ---
 
 
-@app.post("/auth/register", response_model=Token)
+@api_router.post("/auth/register", response_model=Token)
 @limiter.limit("5/minute")
 def register(request: Request, user_data: UserCreate, db: Session = Depends(database.get_db)):
     db_user = (
@@ -155,7 +130,7 @@ def register(request: Request, user_data: UserCreate, db: Session = Depends(data
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@app.post("/auth/token", response_model=Token)
+@api_router.post("/auth/token", response_model=Token)
 @limiter.limit("5/minute")
 def login(
     request: Request,
@@ -181,7 +156,7 @@ def login(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@app.post("/auth/logout", status_code=status.HTTP_204_NO_CONTENT)
+@api_router.post("/auth/logout", status_code=status.HTTP_204_NO_CONTENT)
 def logout(
     token: str = Depends(auth.oauth2_scheme),
     _current_user: models.UserDB = Depends(auth.get_current_user),
@@ -193,9 +168,9 @@ def logout(
 # --- Protected Endpoints ---
 
 
-@app.post("/items")
+@api_router.post("/items")
 def create_item(
-    item: PantryItemCreate,
+    item: models.PantryItemCreate,
     db: Session = Depends(database.get_db),
     current_user: models.UserDB = Depends(auth.get_current_user),
 ):
@@ -213,7 +188,7 @@ def create_item(
     return new_item
 
 
-@app.get("/items")
+@api_router.get("/items")
 def list_items(
     limit: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
     offset: int = Query(0, ge=0),
@@ -230,7 +205,7 @@ def list_items(
     )
 
 
-@app.delete("/items/{item_id}")
+@api_router.delete("/items/{item_id}")
 def delete_item(
     item_id: int,
     db: Session = Depends(database.get_db),
@@ -253,9 +228,9 @@ def delete_item(
     return {"message": "Success"}
 
 
-@app.post("/items/consume", response_model=ConsumptionResponse)
+@api_router.post("/items/consume", response_model=models.ConsumptionResponse)
 def consume_items(
-    consumption: List[ItemConsume],
+    consumption: List[models.ItemConsume],
     db: Session = Depends(database.get_db),
     current_user: models.UserDB = Depends(auth.get_current_user),
 ):
@@ -321,7 +296,7 @@ def consume_items(
     }
 
 
-@app.get("/profile")
+@api_router.get("/profile")
 def get_profile(
     db: Session = Depends(database.get_db),
     current_user: models.UserDB = Depends(auth.get_current_user),
@@ -339,7 +314,7 @@ def get_profile(
     return profile
 
 
-@app.put("/profile")
+@api_router.put("/profile")
 def update_profile(
     profile_data: UserProfileUpdate,
     db: Session = Depends(database.get_db),
@@ -362,7 +337,7 @@ def update_profile(
     return profile
 
 
-@app.get("/activities")
+@api_router.get("/activities")
 def list_activities(
     limit: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
     offset: int = Query(0, ge=0),
@@ -379,9 +354,9 @@ def list_activities(
     )
 
 
-@app.post("/activities")
+@api_router.post("/activities")
 def create_activity(
-    activity: ActivityCreate,
+    activity: models.ActivityCreate,
     db: Session = Depends(database.get_db),
     current_user: models.UserDB = Depends(auth.get_current_user),
 ):
@@ -398,7 +373,7 @@ def create_activity(
     return new_activity
 
 
-@app.delete("/activities/{activity_id}")
+@api_router.delete("/activities/{activity_id}")
 def delete_activity(
     activity_id: int,
     db: Session = Depends(database.get_db),
@@ -421,7 +396,7 @@ def delete_activity(
     return {"message": "Success"}
 
 
-@app.get("/ai/last_plan/{plan_type}")
+@api_router.get("/ai/last_plan/{plan_type}")
 def get_last_plan(
     plan_type: str,
     db: Session = Depends(database.get_db),
@@ -441,7 +416,7 @@ def get_last_plan(
     return {"plan": plan.content, "created_at": plan.created_at}
 
 
-@app.post("/ai/diet")
+@api_router.post("/ai/diet")
 def get_diet_plan(
     db: Session = Depends(database.get_db),
     current_user: models.UserDB = Depends(auth.get_current_user),
@@ -500,7 +475,12 @@ def get_diet_plan(
         if profile_parts:
             profile_context = ", ".join(profile_parts)
 
-    plan = ai_service.generate_diet_plan(pantry_list, activity_list, profile_context)
+    try:
+        plan = ai_service.generate_diet_plan(
+            pantry_list, activity_list, profile_context
+        )
+    except ai_service.LocalModelError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
 
     new_plan = models.PlanDB(
         plan_type="diet",
@@ -513,7 +493,7 @@ def get_diet_plan(
     return {"plan": plan}
 
 
-@app.post("/ai/workout")
+@api_router.post("/ai/workout")
 def get_workout_plan(
     request: WorkoutRequest,
     db: Session = Depends(database.get_db),
@@ -548,7 +528,10 @@ def get_workout_plan(
             detail="Goal not defined. Please set 'Primary Goal' in your profile.",
         )
 
-    plan = ai_service.generate_workout_plan(user_data)
+    try:
+        plan = ai_service.generate_workout_plan(user_data)
+    except ai_service.LocalModelError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
 
     new_plan = models.PlanDB(
         plan_type="workout",
@@ -561,7 +544,7 @@ def get_workout_plan(
     return {"plan": plan}
 
 
-@app.post("/ai/shopping")
+@api_router.post("/ai/shopping")
 def get_shopping_list(
     request: ShoppingRequest,
     db: Session = Depends(database.get_db),
@@ -578,14 +561,17 @@ def get_shopping_list(
         {"name": i.name, "quantity": i.quantity, "unit": i.unit.value} for i in items
     ]
 
-    list_content = ai_service.generate_shopping_list(
-        pantry_items=pantry_list,
-        workout_plan=request.workout_plan,
-        days=request.days if request.days is not None else 7,
-        budget=request.budget,
-        avoids=request.avoids,
-        preferences=request.preferences,
-    )
+    try:
+        list_content = ai_service.generate_shopping_list(
+            pantry_items=pantry_list,
+            workout_plan=request.workout_plan,
+            days=request.days if request.days is not None else 7,
+            budget=request.budget,
+            avoids=request.avoids,
+            preferences=request.preferences,
+        )
+    except ai_service.LocalModelError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
 
     # Save to database
     new_plan = models.PlanDB(
@@ -598,6 +584,11 @@ def get_shopping_list(
     db.commit()
 
     return {"plan": list_content}
+
+
+app.include_router(api_router)
+app.include_router(api_router, prefix="/api/v1", include_in_schema=False)
+
 
 if __name__ == "__main__":
     import uvicorn

@@ -28,7 +28,7 @@ export function About() {
           <h3 className="text-xl font-bold text-soma-sand mb-4 uppercase tracking-tight">Data Integrity</h3>
           <p className="text-soma-sand/60 leading-relaxed font-light italic">
             Your biological logs remain within the SomaSense encrypted vault. 
-            We utilize Google Gemini 2.0 Flash for neural processing while maintaining 
+            We utilize a locally hosted Gemma 4 model for neural processing while maintaining
             strict user isolation and local-first data principles.
           </p>
         </div>
@@ -42,7 +42,7 @@ export function About() {
             <span className="text-soma-gold flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
               <Zap size={12} /> Neural Core
             </span>
-            <span className="text-soma-sand font-medium">Gemini 2.0 Flash</span>
+            <span className="text-soma-sand font-medium">Local Gemma 4</span>
           </div>
           <div className="flex flex-col gap-2">
             <span className="text-soma-gold flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">

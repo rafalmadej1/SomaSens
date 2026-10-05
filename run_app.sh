@@ -10,11 +10,12 @@ NC='\033[0m' # No Color
 cd "$(dirname "$0")"
 
 printf "${BLUE}>>> SomaSense: System Check...${NC}\n"
+printf "${BLUE}>>> Database: backend/fitness_app.db${NC}\n"
 
 # 1. Python Environment Check
-UVICORN_BIN="./.venv/bin/uvicorn"
-if [ ! -f "$UVICORN_BIN" ]; then
-    printf "${RED}ERROR: uvicorn not found in ./.venv/bin/.${NC}\n"
+PYTHON_BIN="./.venv/bin/python"
+if [ ! -x "$PYTHON_BIN" ]; then
+    printf "${RED}ERROR: Python not found in ./.venv/bin/.${NC}\n"
     printf "Ensure the virtual environment is in the '.venv' folder.\n"
     exit 1
 fi
@@ -36,7 +37,7 @@ fi
 
 # 3. .env Check
 if [ ! -f .env ]; then
-    printf "${YELLOW}WARNING: .env file missing. Gemini features will not function.${NC}\n"
+    printf "${YELLOW}WARNING: .env file missing. Configure local Ollama settings before using AI features.${NC}\n"
 fi
 
 # 4. Frontend Dependencies
@@ -47,23 +48,19 @@ fi
 
 # Cleanup Function
 cleanup() {
+    trap - SIGINT SIGTERM EXIT
     printf "\n${BLUE}>>> Terminating all processes...${NC}\n"
-    # Kill process groups
     [ -n "$BACKEND_PID" ] && kill -TERM "$BACKEND_PID" 2>/dev/null
     [ -n "$FRONTEND_PID" ] && kill -TERM "$FRONTEND_PID" 2>/dev/null
-    
-    # Fallback for stubborn processes
-    pkill -f "uvicorn backend.main:app" 2>/dev/null
-    pkill -f "vite" 2>/dev/null
-    exit
 }
 
-trap cleanup SIGINT SIGTERM EXIT
+trap 'cleanup; exit' SIGINT SIGTERM
+trap cleanup EXIT
 
 # 5. Start Backend
 printf "${GREEN}>>> Initializing Backend (8000)...${NC}\n"
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"
-$UVICORN_BIN backend.main:app --reload --port 8000 &
+$PYTHON_BIN -m uvicorn backend.main:app --reload --port 8000 &
 BACKEND_PID=$!
 
 # 6. Start Frontend

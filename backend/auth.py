@@ -8,26 +8,19 @@ from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 import backend.models as models
 import backend.database as database
-import os
-from dotenv import load_dotenv
+from backend.config import get_settings
 
-# Load .env (so subprocesses started by uvicorn/reloader see variables)
-load_dotenv()
-
-# Configuration - REQUIRE JWT_SECRET_KEY in environment
-secret_key = os.getenv("JWT_SECRET_KEY")
-if not secret_key:
-    raise ValueError("CRITICAL: JWT_SECRET_KEY environment variable is required. Set it before running the app.")
-SECRET_KEY: str = secret_key
+settings = get_settings()
+SECRET_KEY = settings.jwt_secret_key
 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
-JWT_ISSUER = os.getenv("JWT_ISSUER", "somasense-api")
-JWT_AUDIENCE = os.getenv("JWT_AUDIENCE", "somasense-client")
+JWT_ISSUER = settings.jwt_issuer
+JWT_AUDIENCE = settings.jwt_audience
 MIN_PASSWORD_LENGTH = 8
 MAX_PASSWORD_BYTES = 72
 
-if len(SECRET_KEY) < 32 or SECRET_KEY == "your-super-secret-random-key-min-32-chars-change-me-in-production":
+if SECRET_KEY == "your-super-secret-random-key-min-32-chars-change-me-in-production":
     raise ValueError("CRITICAL: JWT_SECRET_KEY must be a unique value at least 32 characters long.")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

@@ -4,6 +4,7 @@ AI service endpoint tests (diet, workout, shopping plans)
 import pytest
 from unittest.mock import patch, MagicMock
 from backend import models
+from backend.ai_service import LocalModelError
 
 
 @patch('backend.ai_service.generate_diet_plan')
@@ -185,3 +186,20 @@ def test_ai_endpoints_unauthorized(client):
     assert client.post("/ai/workout", json={}).status_code == 401
     assert client.post("/ai/shopping", json={}).status_code == 401
     assert client.get("/ai/last_plan/diet").status_code == 401
+
+
+@patch(
+    "backend.ai_service.generate_workout_plan",
+    side_effect=LocalModelError("Local model is unavailable."),
+)
+def test_workout_plan_returns_service_unavailable_when_local_model_fails(
+    _mock_workout, client, auth_headers
+):
+    response = client.post(
+        "/ai/workout",
+        json={"goal": "Build muscle"},
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == "Local model is unavailable."

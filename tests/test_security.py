@@ -2,11 +2,6 @@
 Security Penetration Tests - Attack Surface Analysis
 Tests for SQL Injection, Authentication Bypass, Data Exposure, API Key leaks
 """
-import pytest
-import os
-from unittest.mock import patch
-
-
 class TestSQLInjectionVulnerabilities:
     """Test for SQL injection in user inputs"""
     
@@ -196,18 +191,8 @@ class TestDataExposure:
         assert all("password" not in str(item).lower() for item in data)
 
 
-class TestAPIKeyExposure:
-    """Test for API key and secret exposure"""
-    
-    def test_google_api_key_not_in_error_responses(self, client):
-        """API key should never appear in error messages"""
-        # Manually check if API key is exposed in any response
-        with patch.dict(os.environ, {"GOOGLE_API_KEY": "AIzaSyTEST_SECRET_KEY_12345"}):
-            # Try various endpoints
-            response = client.post("/ai/diet")
-            assert "AIzaSyTEST_SECRET_KEY_12345" not in str(response.text)
-            assert "AIzaSyTEST_SECRET_KEY_12345" not in str(response.json())
-    
+class TestSecretExposure:
+    """Test for secret exposure"""
     
     def test_jwt_secret_not_in_responses(self, client):
         """JWT secret should never be exposed"""

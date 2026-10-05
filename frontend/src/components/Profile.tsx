@@ -34,7 +34,8 @@ export function Profile() {
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            await updateProfile(profile);
+            const savedProfile = await updateProfile(profile);
+            setProfile(savedProfile);
             setMessage('Biometrics updated in guidance system.');
             setTimeout(() => setMessage(''), 3000);
         } catch {
