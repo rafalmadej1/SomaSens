@@ -1,6 +1,6 @@
 # SomaSense - Project Overview
 
-An AI-powered fitness ecosystem with a React/TypeScript frontend and a FastAPI (Python) backend. SomaSense synchronizes your nutrition, physical programs, and supplies through the power of Google Gemini.
+An AI-powered fitness ecosystem with a React/TypeScript frontend and a FastAPI (Python) backend. SomaSense synchronizes nutrition, physical programs, and supplies through a locally hosted Gemma 4 model.
 
 ## System Framework
 
@@ -10,7 +10,7 @@ The project is divided into two main segments:
 
 ### Core Features
 - **Inventory Management**: Track resources, their magnitudes, sectors (Ice, Pantry, Freezer), and expiration timestamps.
-- **AI Nutrition Crafting**: Generates personalized meal protocols based on current inventory using Google Gemini.
+- **AI Nutrition Crafting**: Generates personalized meal protocols from current inventory using local Gemma 4 inference.
 - **AI Program Design**: Generates a physical routine based on user data and biological parameters.
 - **AI Supply Sync**: Generates shopping lists by comparing inventory with the active program.
 
@@ -18,10 +18,11 @@ The project is divided into two main segments:
 
 ## Configuration
 
-### AI Integration (Gemini)
-To use AI features, you must provide a Google Gen AI API Key:
+### AI Integration (Local Gemma 4)
+To use AI features, install and run Ollama, then download the configured model:
 1. Create a `.env` file in the root directory (use `.env.template` as a guide).
-2. Add your key: `GOOGLE_API_KEY=your_actual_key_here`.
+2. Run `ollama pull gemma4`.
+3. Configure `OLLAMA_BASE_URL` and `OLLAMA_MODEL` if the defaults do not match your Ollama instance.
 
 ---
 
@@ -58,7 +59,7 @@ npm run dev
 - **Framework**: FastAPI
 - **ORM**: SQLAlchemy
 - **Vault**: SQLite
-- **Intelligence**: Google Gen AI (google-genai)
+- **Intelligence**: Local Gemma 4 through Ollama
 
 ### Frontend
 - **Framework**: React 19

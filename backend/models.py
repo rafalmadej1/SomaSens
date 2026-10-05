@@ -1,4 +1,7 @@
 import enum
+from typing import List
+
+from pydantic import BaseModel, Field
 from sqlalchemy import Column, DateTime, Integer, String, Enum, ForeignKey, Float, Index
 from sqlalchemy.orm import relationship
 from backend.database import Base
@@ -13,6 +16,32 @@ class LocationEnum(str, enum.Enum):
 class UnitEnum(str, enum.Enum):
     GRAMS = "g"
     PIECES = "szt"
+
+
+class PantryItemCreate(BaseModel):
+    name: str = Field(..., max_length=50)
+    quantity: int = Field(gt=0)
+    unit: UnitEnum = UnitEnum.GRAMS
+    location: LocationEnum
+    expirationDate: str = Field(..., max_length=20)
+
+
+class ItemConsume(BaseModel):
+    name: str
+    quantity_used: int = Field(gt=0)
+
+
+class ConsumptionResponse(BaseModel):
+    updated_items: List[dict]
+    warnings: List[str]
+    missing_items: List[str]
+
+
+class ActivityCreate(BaseModel):
+    activity_type: str = Field(..., max_length=100)
+    calories_burned: int = Field(gt=0)
+    duration_minutes: int = Field(gt=0)
+    date: str = Field(..., max_length=20)
 
 
 class UserDB(Base):

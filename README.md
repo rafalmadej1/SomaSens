@@ -1,10 +1,10 @@
 # SomaSense
 
-SomaSense is a fitness application that combines pantry inventory, activity tracking, biometric profiles, and Gemini-generated diet, workout, and shopping plans.
+SomaSense is a fitness application that combines pantry inventory, activity tracking, biometric profiles, and locally generated Gemma 4 diet, workout, and shopping plans.
 
 ## Stack
 
-- **Backend:** FastAPI, SQLAlchemy, SQLite, Google Gen AI
+- **Backend:** FastAPI, SQLAlchemy, SQLite, Ollama
 - **Frontend:** React 19, TypeScript, Vite, Tailwind CSS v4
 - **Authentication:** bcrypt password hashing and JWT bearer tokens
 
@@ -28,14 +28,21 @@ Install frontend dependencies:
 npm --prefix frontend install
 ```
 
+Install and start [Ollama](https://ollama.com/), then download the configured local model:
+
+```bash
+ollama pull gemma4
+```
+
 Create a root `.env` file from `.env.template` and provide:
 
 ```dotenv
-GOOGLE_API_KEY=your-google-api-key
 JWT_SECRET_KEY=a-unique-random-secret-with-at-least-32-characters
+OLLAMA_BASE_URL=http://127.0.0.1:11434
+OLLAMA_MODEL=gemma4
 ```
 
-`GOOGLE_API_KEY` enables Gemini-backed features. `JWT_SECRET_KEY` is required for the backend to start. `ALLOWED_ORIGINS`, `JWT_ISSUER`, and `JWT_AUDIENCE` may be customized when needed.
+`OLLAMA_BASE_URL` and `OLLAMA_MODEL` configure local plan generation. `JWT_SECRET_KEY` is required for the backend to start. `ALLOWED_ORIGINS`, `JWT_ISSUER`, and `JWT_AUDIENCE` may be customized when needed.
 
 ## Running locally
 
@@ -74,7 +81,7 @@ npm --prefix frontend run build
 
 The React single-page frontend lives in `frontend/src`. `frontend/src/api.ts` is the shared API boundary and persists the bearer token in `localStorage`. Inventory and activity routes paginate with `limit` and `offset`; the UI loads additional records on demand.
 
-Gemini integration in `backend/ai_service.py` generates diet, workout, and shopping plans. Generated plans are saved per user and type, with the most recent plan returned to the frontend. AI context is capped to 100 pantry items and, for diet generation, the 30 newest activities.
+The Ollama integration in `backend/ai_service.py` generates diet, workout, and shopping plans with a local Gemma 4 model. Generated plans are saved per user and type, with the most recent plan returned to the frontend. AI context is capped to 100 pantry items and, for diet generation, the 30 newest activities.
 
 ## Authentication
 

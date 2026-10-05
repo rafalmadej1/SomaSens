@@ -22,11 +22,6 @@ pydantic-extra-types>=2.0.0
 pydantic>=2.0.0
 pydantic-settings>=2.0.0
 
-# AI/ML - Google Gemini Integration
-google-genai>=1.70.0
-google-api-core>=2.30.0
-google-auth>=2.49.0
-
 # Utilities
 python-dotenv>=1.0.0
 requests>=2.31.0
@@ -40,4 +35,3 @@ httpx>=0.26.0
 # Development
 uvloop>=0.20.0  # Performance boost for uvicorn
 watchfiles>=0.22.0  # Auto-reload support
-

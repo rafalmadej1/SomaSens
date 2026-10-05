@@ -12,8 +12,6 @@ load_dotenv()
 # Set test environment variables if not present
 if not os.getenv("JWT_SECRET_KEY"):
     os.environ["JWT_SECRET_KEY"] = "test-secret-key-for-testing-only-32-chars-min"
-if not os.getenv("GOOGLE_API_KEY"):
-    os.environ["GOOGLE_API_KEY"] = "test-api-key"
 if not os.getenv("ALLOWED_ORIGINS"):
     os.environ["ALLOWED_ORIGINS"] = "http://localhost:5173"
 
