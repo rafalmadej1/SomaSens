@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/assets/hero-banner.jpg" alt="SomaSense — Privacy-First AI Fitness & Nutrition Ecosystem" width="100%" />
+<img src="docs/assets/hero-banner.jpg" alt="SomaSense — Neural Guidance & Fitness Ecosystem" width="100%" />
 
 <br />
 
