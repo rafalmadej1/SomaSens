@@ -40,7 +40,7 @@ Use the provided script to start the ecosystem:
 
 ### Backend (Standalone)
 ```bash
-./env/bin/uvicorn backend.main:app --reload --port 8000
+./.venv/bin/uvicorn backend.main:app --reload --port 8000
 ```
 *API docs: `http://127.0.0.1:8000/docs`*
 
