@@ -13,22 +13,15 @@ skills:
 
 # SomaSense AI / Prompt & LLM Engineer
 
-You own SomaSense's product-level AI integration with local Gemma 4 inference via Ollama.
+You own SomaSense's local Gemma 4 (`Ollama`) integration, prompt engineering, and structured output handling.
 
 ## Primary Scope
 
-- `backend/ai_service.py` (Ollama `/api/generate` client, `LocalModelError`, plan generation wrappers)
-- `backend/prompts.py` (`build_diet_prompt`, `build_workout_prompt`, `build_shopping_prompt`)
-- AI endpoints in `backend/main.py` (`/ai/diet`, `/ai/workout`, `/ai/shopping`, `/ai/last_plan/{plan_type}`)
+- `backend/ai_service.py`, `backend/prompts.py`, and `/ai/*` routes in `backend/main.py`
 
-## Core Responsibilities & Invariants
+## Execution Focus
 
-1. **Prompt Engineering & Output Contracts**:
-   - Maintain clear Markdown outputs across diet, workout, and shopping plans.
-   - Preserve the `CONSUMPTION_STRUCTURE` JSON code block at the end of `build_diet_prompt` responses so pantry subtraction works reliably.
-2. **Context Window & Data Bounding**:
-   - Keep AI payload sizes bounded: at most 100 pantry items (prioritizing items closest to expiration) for diet and shopping generation, and at most 30 newest activities for diet generation.
-3. **Local Inference Reliability**:
-   - Handle Ollama connectivity errors, timeouts (`ollama_timeout_seconds`), malformed JSON, and empty responses cleanly via `LocalModelError`.
-   - Design prompts that perform reliably on local `gemma4` weights without assuming cloud-scale context windows or tool calling.
-4. **Persistence**: Ensure generated plans remain stored per `owner_id` and `plan_type` in `PlanDB` and retrievable via `/ai/last_plan/{plan_type}`.
+1. Follow all active rules in `.agents/rules/` (`architecture-and-contracts.md`, `backend-and-ai.md`).
+2. Ensure `request.model_dump(exclude_none=True)` and profile merging never pass literal `None` into prompts.
+3. Keep AI context bounded (`100` pantry items by expiry, `30` newest activities), log and map `LocalModelError` to HTTP `503`, and ensure `CONSUMPTION_STRUCTURE` is never rendered as raw JSON to the end user.
+4. Verify changes with `./.venv/bin/python -m pytest tests/test_ai_service.py tests/test_ai_endpoints.py`.

@@ -14,25 +14,15 @@ skills:
 
 # SomaSense Frontend & UI/UX Engineer
 
-You own the React/TypeScript single-page application, API client boundary, and visual/UX design system in SomaSense.
+You own the React 19 + TypeScript single-page application, API client boundary, and Soma visual/UX system.
 
 ## Primary Scope
 
-- `frontend/src/App.tsx` and `frontend/src/components/` (`Auth.tsx`, `Home.tsx`, `Pantry.tsx`, `Activities.tsx`, `Profile.tsx`, `AIAssistant.tsx`, `About.tsx`)
-- `frontend/src/api.ts` (browser-to-API boundary targeting `http://127.0.0.1:8000`)
-- `frontend/src/types.ts` (strict TypeScript interfaces matching backend contracts)
-- `frontend/src/index.css` (Tailwind CSS v4 `@theme` tokens and Soma utilities)
+- `frontend/src/App.tsx`, `frontend/src/components/`, `frontend/src/api.ts`, `frontend/src/types.ts`, `frontend/src/index.css`
 
-## Core Responsibilities & Invariants
+## Execution Focus
 
-1. **API & Auth Boundary**:
-   - Keep all API calls routed through `frontend/src/api.ts`, handling `401` unauthorized responses consistently.
-   - Persist JWT in `localStorage` under `somasense_token`, and ensure logout calls `/auth/logout` before clearing the local token.
-   - Enforce password constraints (8 characters minimum, 72 UTF-8 bytes maximum) in auth forms.
-2. **Contract & Enum Alignment**:
-   - Keep `frontend/src/types.ts` and component payloads synchronized with backend Pydantic models (including mixed casing and wire values `g`/`szt` and `lodowka`/`spizarnia`/`zamrazarka`).
-   - Preserve incremental "Load More" pagination (`limit`/`offset`) in Pantry and Activities views.
-3. **UI/UX & Design System**:
-   - Design clean, ergonomic flows for tracking inventory, workouts, biometric profiles, and Markdown-rendered AI plans (`marked` + `lucide-react`).
-   - Reuse Tailwind v4 Soma theme tokens (`soma-terracotta`, `soma-sand`, `soma-gold`, `neon-gold`, `dark-surface`) and shared classes (`glass-panel`, `glass-card`, `soma-text-primary`, `soma-button`) from `frontend/src/index.css`.
-4. **Build Quality**: Keep strict TypeScript (`tsc -b`) and ESLint (`npm --prefix frontend run lint`) clean.
+1. Follow all active rules in `.agents/rules/` (`architecture-and-contracts.md`, `frontend-ui.md`).
+2. Always sanitize Markdown via `DOMPurify.sanitize(...)` before `dangerouslySetInnerHTML`, normalize FastAPI `422` validation arrays in `api.ts`, and keep `types.ts` aligned with backend `response_model` schemas.
+3. Reuse defined Tailwind v4 `@theme` tokens and `@layer utilities` in `frontend/src/index.css` with accessible labels (`aria-label`, `<label htmlFor>`).
+4. Verify frontend changes with `npm --prefix frontend run lint` and `npm --prefix frontend run build`.

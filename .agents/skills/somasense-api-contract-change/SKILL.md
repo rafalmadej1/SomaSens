@@ -12,19 +12,16 @@ Use this checklist whenever a backend route, Pydantic schema, or SQLAlchemy mode
 
 ## Steps
 
-1. **Database & Schemas (`backend/models.py`)**:
-   - Update SQLAlchemy models and Pydantic schemas.
+1. **Database & Schemas (`backend/models.py`, `backend/main.py`)**:
    - Ensure user-owned models keep `owner_id` foreign-key scoping.
-   - Preserve existing casing conventions (`expirationDate` for pantry; snake_case for activities/profile; `activityLevel` for workout requests) and `UnitEnum`/`LocationEnum` values.
+   - Add explicit `Field(max_length=..., ge=..., le=...)` validation bounds and declare a dedicated `*Read` / response schema with `response_model` on the route.
+   - Use `snake_case` for all new fields; preserve legacy names (`expirationDate`, `activityLevel`, `g`/`szt`, `lodowka`/`spizarnia`/`zamrazarka`) unless migrating both backend and frontend in the same change.
 2. **Routes & Business Logic (`backend/main.py`)**:
    - Enforce `owner_id` filtering on all queries and mutations.
    - Preserve `limit`/`offset` pagination (`default=100`, `max=250`, newest first) on collection endpoints.
-   - Keep AI context bounds (max 100 pantry items, 30 newest activities) and `CONSUMPTION_STRUCTURE` JSON output when touching AI endpoints (`backend/ai_service.py`, `backend/prompts.py`).
 3. **Frontend Types & Client (`frontend/src/types.ts`, `frontend/src/api.ts`)**:
-   - Mirror the updated request/response contract in `frontend/src/types.ts`.
-   - Update `frontend/src/api.ts` and consuming React components under `frontend/src/components/`.
-4. **Tests (`tests/`)**:
-   - Add or update pytest coverage using `client` and `auth_headers` from `tests/conftest.py`.
-   - Mock `backend.ai_service` functions instead of calling Ollama.
-5. **Verify**:
-   - Run backend pytest and frontend `lint` + `build` (see `somasense-verify`).
+   - Mirror the exact request/response contract in `frontend/src/types.ts` (avoid unused or drifted types).
+   - Update `frontend/src/api.ts` (including `422` validation error formatting) and consuming components under `frontend/src/components/`.
+4. **Tests & Verification (`tests/`)**:
+   - Add pytest coverage for happy path, `422` validation bounds, and cross-user `404` IDOR isolation.
+   - Run `./.venv/bin/python -m pytest`, `npm --prefix frontend run lint`, and `npm --prefix frontend run build`.

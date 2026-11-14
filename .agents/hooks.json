@@ -1,0 +1,12 @@
+{
+  "sqlite-working-tree-guard": {
+    "enabled": true,
+    "Stop": [
+      {
+        "type": "command",
+        "command": "INPUT=$(cat); if printf '%s' \"$INPUT\" | grep -q '\"continuationActive\":true'; then printf '{\"decision\":\"allow\"}'; elif git status --porcelain 2>/dev/null | grep -q 'fitness_app.db'; then printf '{\"decision\":\"continue\",\"reason\":\"backend/fitness_app.db was modified or staged during this turn. Restore or unstage it before finishing.\"}'; else printf '{\"decision\":\"allow\"}'; fi",
+        "timeout": 5
+      }
+    ]
+  }
+}

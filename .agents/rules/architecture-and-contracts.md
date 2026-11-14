@@ -5,15 +5,15 @@ description: Core SomaSense architecture, authentication, data scoping, and cros
 
 # SomaSense Architecture & Contracts
 
-- **Working Directory & Env**: Run backend commands and tests from the repository root (`PYTHONPATH` expects root). Runtime auth requires `JWT_SECRET_KEY` (minimum 32 chars); local AI features require a running Ollama instance with `OLLAMA_BASE_URL` and `OLLAMA_MODEL` (configured in root `.env` without committing secrets).
-- **Ownership Scoping (`owner_id`)**: Every application record (inventory, activity, profile, generated plan) is scoped by `owner_id`. Protected routes resolve the current user through `backend/auth.py`; every query and mutation MUST preserve the `owner_id` filter.
+- **Working Directory & Env**: Run backend commands and tests from the repository root (`PYTHONPATH` expects root). Runtime auth requires `JWT_SECRET_KEY` (minimum 32 chars); local AI features require a running Ollama instance with `OLLAMA_BASE_URL` and `OLLAMA_MODEL` in root `.env` (never commit `.env` or `*.db`).
+- **Ownership Scoping (`owner_id`)**: Every user record (inventory, activity, profile, generated plan) is scoped by `owner_id`. Protected routes resolve the current user through `backend/auth.py`; every query and mutation MUST filter by `owner_id` and return `404` when a resource does not belong to the user.
 - **Authentication & Token Lifecycle**:
-  - Registration passwords require at least 8 characters and at most 72 UTF-8 bytes; enforce these limits in both API validation and frontend controls.
-  - Access tokens expire after 7 days and require `iss`, `aud`, and `jti` claims.
-  - `/auth/logout` records the token `jti` in the revocation table; client logout MUST call `/auth/logout` before clearing `somasense_token` from `localStorage`.
-- **Pagination Contract**: Inventory and activity endpoints use `limit`/`offset` pagination (default `100`, maximum `250`) and return newest records first. Preserve this contract and avoid unbounded reads.
-- **API & Persistence Naming**: Existing schemas intentionally mix casing across resources—keep each contract aligned across Pydantic models (`backend/models.py`, `backend/main.py`), TypeScript (`frontend/src/types.ts`, `frontend/src/api.ts`), and UI components:
-  - Pantry: `expirationDate`
-  - Activities: `activity_type`, `calories_burned`, `duration_minutes`
-  - Profile persistence: `activity_level` (while workout requests use `activityLevel`)
-- **Pantry Enum Wire Values**: Backend enums restrict `unit` to `g` or `szt` (`UnitEnum`), and `location` to `lodowka`, `spizarnia`, or `zamrazarka` (`LocationEnum`). Preserve these exact wire values even when UI labels are in English.
+  - Registration passwords require 8 characters minimum and 72 UTF-8 bytes maximum (`has_valid_password_length`).
+  - Access tokens validate `iss`, `aud`, `exp`, and `jti` claims; `/auth/logout` revokes `jti` in `RevokedTokenDB`.
+- **API Contracts & Validation**:
+  - Every endpoint MUST declare an explicit `response_model` (never return raw SQLAlchemy ORM instances that leak `owner_id`).
+  - Enforce explicit `Field(max_length=..., ge=..., le=...)` bounds on all user and AI request fields.
+  - Inventory and activity list endpoints use `limit`/`offset` pagination (`default=100`, `max=250`, newest first).
+- **Legacy Naming & Enum Compatibility**:
+  - Existing routes mix casing (`expirationDate` in pantry, `activity_level` in profile vs `activityLevel` in workout request) and use Polish enum wire values (`UnitEnum`: `g`/`szt`; `LocationEnum`: `lodowka`/`spizarnia`/`zamrazarka`).
+  - Treat mixed casing as legacy compatibility: keep existing fields synchronized across backend and frontend unless refactoring both sides together, and use `snake_case` for all new API fields.

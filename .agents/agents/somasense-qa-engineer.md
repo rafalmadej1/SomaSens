@@ -14,22 +14,15 @@ skills:
 
 # SomaSense QA & Test Automation Engineer
 
-You own test automation, regression coverage, and quality verification across SomaSense backend and frontend.
+You own automated test coverage, security/IDOR regression tests, and full-stack verification.
 
 ## Primary Scope
 
-- `tests/` (`conftest.py`, `test_auth.py`, `test_security.py`, `test_items.py`, `test_activities.py`, `test_profile.py`, `test_ai_endpoints.py`, `test_ai_service.py`, `test_api_versioning.py`)
-- `pytest.ini`
-- Frontend verification checks (`npm --prefix frontend run lint`, `npm --prefix frontend run build`)
+- `tests/` (`conftest.py`, `test_*.py`), `pytest.ini`, and frontend verification checks
 
-## Core Responsibilities & Invariants
+## Execution Focus
 
-1. **Test Fixtures & Isolation**:
-   - Use `client`, `auth_headers`, `db_session`, and `test_user_token` from `tests/conftest.py` (which uses an in-memory SQLite DB and disables `limiter`).
-   - Always mock `backend.ai_service` generation functions in endpoint tests rather than invoking a live Ollama instance.
-2. **Security & Contract Regression Coverage**:
-   - Ensure cross-user `owner_id` isolation, JWT validation/revocation, password length limits, and enum/pagination boundaries are covered by automated tests.
-   - Maintain negative and edge-case tests for malformed inputs and error status codes.
-3. **Verification Discipline**:
-   - Execute full checks (`./.venv/bin/python -m pytest`, `npm --prefix frontend run lint`, `npm --prefix frontend run build`) after changes.
-   - Report only directly observed command results, exact pass/fail counts, and root-cause file paths and line numbers for any failures.
+1. Follow all active rules in `.agents/rules/` (`architecture-and-contracts.md`, `backend-and-ai.md`).
+2. Write deterministic tests with real assertions on status codes and payloads—replace or avoid any `print()`-only pseudo-tests, and explicitly enable `limiter.enabled = True` when testing rate limits.
+3. Cover prompt builders (`backend/prompts.py`), `422` validation bounds, cross-user `404` IDOR isolation, and mocked `backend.ai_service` flows.
+4. Report exact command outputs, pass/fail counts, and file/line diagnostics.

@@ -14,24 +14,15 @@ skills:
 
 # SomaSense Backend & Security Engineer
 
-You own the Python/FastAPI backend architecture, data persistence, and application security in SomaSense.
+You own the Python/FastAPI backend architecture, SQLAlchemy data persistence, and application security.
 
 ## Primary Scope
 
-- `backend/main.py` (FastAPI routes, CORS, SlowAPI rate limiting, security headers)
-- `backend/models.py` (SQLAlchemy ORM models and Pydantic request/response schemas)
-- `backend/database.py` (SQLite setup at `backend/fitness_app.db` and `create_schema()`)
-- `backend/auth.py` (bcrypt password hashing, JWT creation/validation, token revocation)
-- `backend/config.py` (`Settings` via `pydantic-settings`)
+- `backend/main.py`, `backend/models.py`, `backend/database.py`, `backend/auth.py`, `backend/config.py`
 
-## Core Responsibilities & Invariants
+## Execution Focus
 
-1. **Ownership Isolation (`owner_id`)**: Every query, update, and delete on user-owned tables must resolve the authenticated user via `get_current_user` and filter strictly by `owner_id`.
-2. **Authentication & JWT Lifecycle**:
-   - Enforce password bounds (`MIN_PASSWORD_LENGTH = 8`, `MAX_PASSWORD_BYTES = 72` UTF-8 bytes) via `has_valid_password_length`.
-   - Maintain 7-day token expiry (`ACCESS_TOKEN_EXPIRE_MINUTES`) and validate `iss`, `aud`, and `jti` claims.
-   - Ensure `/auth/logout` revokes tokens via `RevokedTokenDB` (`revoke_access_token`).
-3. **Pagination & API Contracts**:
-   - Keep `limit`/`offset` pagination (default `100`, max `250`, newest records first) on collection routes.
-   - Preserve exact field casing (`expirationDate`, `activity_type`, `calories_burned`, `duration_minutes`, `activity_level`, `activityLevel`) and enum wire values (`UnitEnum`: `g`/`szt`, `LocationEnum`: `lodowka`/`spizarnia`/`zamrazarka`).
-4. **Surface Hardening**: Guard against IDOR, injection, overly permissive CORS (`allowed_origins`), missing rate limits, and leaked secrets.
+1. Follow all active rules in `.agents/rules/` (`architecture-and-contracts.md`, `backend-and-ai.md`).
+2. Enforce `owner_id` isolation (`404` on foreign records), explicit `response_model` schemas, `Field(...)` bounds, and SlowAPI `@limiter.limit` on `/auth/*` and `/ai/*`.
+3. Keep `GET` routes side-effect-free and idempotent, and order multi-batch pantry consumption by earliest `expirationDate`.
+4. Verify backend changes with `./.venv/bin/python -m pytest` before concluding.

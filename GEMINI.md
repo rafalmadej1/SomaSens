@@ -1,68 +1,20 @@
-# SomaSense - Project Overview
+# SomaSense
 
-An AI-powered fitness ecosystem with a React/TypeScript frontend and a FastAPI (Python) backend. SomaSense synchronizes nutrition, physical programs, and supplies through a locally hosted Gemma 4 model.
+AI-powered fitness application combining pantry inventory, activity tracking, biometric profiles, and locally generated Gemma 4 (`Ollama`) diet, workout, and shopping plans.
 
-## System Framework
+## Stack & Structure
 
-The project is divided into two main segments:
-- **Backend**: Located in the `backend/` directory, built with **FastAPI** and **SQLAlchemy**. It uses **SQLite** as the primary vault (`fitness_app.db`).
-- **Frontend**: Located in the `frontend/` directory, built with **React**, **TypeScript**, and **Vite**. Styling is handled by **Tailwind CSS v4**.
+- **Backend (`backend/`)**: Python 3.13+, FastAPI, SQLAlchemy 2.x, SQLite (`backend/fitness_app.db`), Ollama (`gemma4`).
+- **Frontend (`frontend/`)**: React 19, TypeScript (`strict`), Vite, Tailwind CSS v4 (Ancient Earth + Glassmorphism theme in `frontend/src/index.css`).
+- **Tests (`tests/`)**: `pytest` with isolated in-memory SQLite (`tests/conftest.py`).
+- **Agent Customizations (`.agents/`)**:
+  - `.agents/rules/` — architectural, backend/AI, and frontend rules (`always_on` and `glob`).
+  - `.agents/skills/` — step-by-step workflows for verification, local dev, API contracts, security, AI prompts, UI, and domain review.
+  - `.agents/agents/` — 6 role-based agents (`pro` for coding/testing roles, `flash` for domain/DevOps).
+  - `.agents/hooks.json` — lifecycle hooks.
 
-### Core Features
-- **Inventory Management**: Track resources, their magnitudes, sectors (Ice, Pantry, Freezer), and expiration timestamps.
-- **AI Nutrition Crafting**: Generates personalized meal protocols from current inventory using local Gemma 4 inference.
-- **AI Program Design**: Generates a physical routine based on user data and biological parameters.
-- **AI Supply Sync**: Generates shopping lists by comparing inventory with the active program.
+## Quick Commands (run from repo root)
 
----
-
-## Configuration
-
-### AI Integration (Local Gemma 4)
-To use AI features, install and run Ollama, then download the configured model:
-1. Create a `.env` file in the root directory (use `.env.template` as a guide).
-2. Run `ollama pull gemma4`.
-3. Configure `OLLAMA_BASE_URL` and `OLLAMA_MODEL` if the defaults do not match your Ollama instance.
-
----
-
-## Getting Started
-
-### Prerequisites
-- Python 3.13+
-- Node.js & npm
-
-### Execution
-Use the provided script to start the ecosystem:
-```bash
-./run_app.sh
-```
-
-### Backend (Standalone)
-```bash
-./.venv/bin/uvicorn backend.main:app --reload --port 8000
-```
-*API docs: `http://127.0.0.1:8000/docs`*
-
-### Frontend (Standalone)
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
----
-
-## Technical Specifications
-
-### Backend
-- **Framework**: FastAPI
-- **ORM**: SQLAlchemy
-- **Vault**: SQLite
-- **Intelligence**: Local Gemma 4 through Ollama
-
-### Frontend
-- **Framework**: React 19
-- **Styling**: Tailwind CSS v4 (Glassmorphism + Ancient Earth theme)
-- **Icons**: `lucide-react`
-- **Typing**: Strict TypeScript
+- Full stack: `./run_app.sh`
+- Backend tests: `./.venv/bin/python -m pytest`
+- Frontend checks: `npm --prefix frontend run lint && npm --prefix frontend run build`

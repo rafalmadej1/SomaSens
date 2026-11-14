@@ -1,19 +1,21 @@
 ---
 trigger: glob
 globs: "frontend/**/*"
-description: React 19, TypeScript, Vite, API boundary, and Tailwind v4 Soma theme conventions.
+description: React 19, TypeScript, Vite, XSS sanitization, API boundary, and Tailwind v4 Soma theme conventions.
 ---
 
 # Frontend & UI Rules
 
-- **API Boundary (`frontend/src/api.ts`)**:
-  - `frontend/src/api.ts` is the single browser-to-API client targeting `http://127.0.0.1:8000`, persisting the JWT in `localStorage` under `somasense_token`, and handling `401` unauthorized responses.
-  - Keep endpoint paths, request payloads, and TypeScript interfaces in `frontend/src/types.ts` synchronized with `backend/main.py` and `backend/models.py`.
-  - Preserve collection pagination via "Load More" controls (`limit`/`offset`) rather than fetching unbounded lists.
-- **AI Assistant Lifecycle**:
-  - The AI assistant view loads persisted `diet`, `workout`, and `shopping` plans on mount.
-  - Diet generation draws on pantry, activities, and profile; workout generation is supplemented by profile fields; shopping can receive the active workout plan.
-- **Styling & Theme (`frontend/src/index.css`)**:
-  - Styling uses Tailwind CSS v4 `@theme` tokens (`soma-terracotta`, `soma-sand`, `soma-gold`, `neon-gold`, `dark-surface`) and shared utilities (`glass-panel`, `glass-card`, `soma-text-primary`, `soma-button`).
-  - Reuse existing Soma Ancient Earth + glassmorphism utilities for new UI instead of introducing separate color palettes or ad-hoc CSS systems.
-- **TypeScript & Linting**: Maintain strict TypeScript compatibility (`tsc -b`) and zero ESLint errors (`npm --prefix frontend run lint`).
+- **XSS & Markdown Safety (Critical)**:
+  - `marked` does NOT sanitize HTML. Never pass LLM or user Markdown to `dangerouslySetInnerHTML` without sanitizing through `DOMPurify.sanitize(...)`.
+- **API Client & Error Handling (`frontend/src/api.ts`)**:
+  - Route all HTTP requests through `frontend/src/api.ts` (prefer `import.meta.env.VITE_API_URL` / Vite proxy over hardcoded `http://127.0.0.1:8000`).
+  - Normalize FastAPI error responses: for HTTP `422`, `error.detail` is an array of validation objects—format them into a readable string so UI never renders `[object Object]`.
+  - Keep `frontend/src/types.ts` strictly aligned with backend schemas (e.g., `unit: 'g' | 'szt'`, nullable profile fields).
+- **State, Pagination & Forms**:
+  - Avoid hardcoded fake biometric defaults in `Profile.tsx` that could be saved on failed fetches.
+  - After local item creation/deletion in paginated lists (`Pantry.tsx`, `Activities.tsx`), keep pagination offsets consistent so "Load More" neither duplicates nor skips items.
+- **Styling & Accessibility (`frontend/src/index.css`)**:
+  - Place external `@import url(...)` font rules before `@import "tailwindcss"`.
+  - Reuse defined `@theme` tokens (`soma-terracotta`, `soma-sand`, `soma-gold`, `neon-gold`, `dark-surface`) and `@layer utilities` (`glass-panel`, `glass-card`, `soma-text-primary`, `soma-button`). Never use undefined classes (such as `animate-pulse-glow`, `animate-shake`, or `no-scrollbar`).
+  - Provide `aria-label` on icon-only buttons and associate `<label htmlFor>` with form inputs.
