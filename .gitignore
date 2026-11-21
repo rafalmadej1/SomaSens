@@ -33,3 +33,6 @@ frontend/.vite/
 # Editor and operating-system files
 .DS_Store
 .vscode/
+
+# Code reviews
+somasense_code_review.md
